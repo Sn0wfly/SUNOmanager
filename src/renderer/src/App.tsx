@@ -34,6 +34,7 @@ export default function App() {
   async function handleFolderSelected(folder: string) {
     setRootFolder(folder)
     setShowFirstRun(false)
+    await window.api.library.setRoot(folder)
     setScanStatus('Scanning library...')
     const result = await window.api.library.scan(folder)
     setScanStatus(`Found ${result.added} songs${result.errors.length > 0 ? ` (${result.errors.length} errors)` : ''}`)
