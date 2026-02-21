@@ -3,10 +3,11 @@ import { useLibraryStore } from '../store/library'
 
 interface SidebarProps {
   onRescan: () => void
+  onChangeFolder: () => void
   scanStatus: string | null
 }
 
-export default function Sidebar({ onRescan, scanStatus }: SidebarProps) {
+export default function Sidebar({ onRescan, onChangeFolder, scanStatus }: SidebarProps) {
   const {
     genres,
     bands,
@@ -173,7 +174,7 @@ export default function Sidebar({ onRescan, scanStatus }: SidebarProps) {
               <button
                 onClick={() => setShowFolderInfo(true)}
                 title="How to organize your folder structure"
-                style={{ color: 'var(--suno-border)', background: 'none', padding: 0, lineHeight: 1 }}
+                style={{ color: 'var(--suno-muted)', background: 'none', padding: 0, lineHeight: 1 }}
                 className="transition-colors hover:text-purple-400"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -384,10 +385,10 @@ export default function Sidebar({ onRescan, scanStatus }: SidebarProps) {
         </div>
       )}
 
-      {/* Rescan button */}
-      <div className="p-3" style={{ borderTop: '1px solid var(--suno-border)' }}>
+      {/* Bottom buttons */}
+      <div className="p-3 space-y-2" style={{ borderTop: '1px solid var(--suno-border)' }}>
         {scanStatus && (
-          <p className="text-xs mb-2 text-center truncate" style={{ color: 'var(--suno-accent)' }}>
+          <p className="text-xs text-center truncate" style={{ color: 'var(--suno-accent)' }}>
             {scanStatus}
           </p>
         )}
@@ -406,6 +407,20 @@ export default function Sidebar({ onRescan, scanStatus }: SidebarProps) {
             <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
           </svg>
           Rescan Folder
+        </button>
+        <button
+          onClick={onChangeFolder}
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-colors"
+          style={{
+            backgroundColor: 'transparent',
+            color: 'var(--suno-muted)',
+            border: '1px solid var(--suno-border)'
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+          </svg>
+          Change Folder
         </button>
       </div>
     </div>

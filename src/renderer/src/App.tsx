@@ -45,6 +45,13 @@ export default function App() {
     setTimeout(() => setScanStatus(null), 4000)
   }
 
+  async function handleChangeFolder() {
+    const folder = await window.api.library.pickFolder()
+    if (folder) {
+      await handleFolderSelected(folder)
+    }
+  }
+
   async function handleRescan() {
     if (!rootFolder) return
     setScanStatus('Scanning...')
@@ -77,7 +84,7 @@ export default function App() {
     >
       {/* Main 3-panel area */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar onRescan={handleRescan} scanStatus={scanStatus} />
+        <Sidebar onRescan={handleRescan} onChangeFolder={handleChangeFolder} scanStatus={scanStatus} />
         <SongList />
         <SongDetail />
       </div>

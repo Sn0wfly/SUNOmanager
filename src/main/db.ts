@@ -192,6 +192,10 @@ export function deleteSong(id: number): void {
   db.prepare('DELETE FROM songs WHERE id = ?').run(id)
 }
 
+export function clearAllSongs(): void {
+  db.prepare('DELETE FROM songs').run()
+}
+
 export function getGenres(): { genre: string; count: number }[] {
   return db.prepare(`
     SELECT genre, COUNT(*) as count FROM songs

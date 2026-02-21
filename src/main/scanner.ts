@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { upsertSong } from './db'
+import { upsertSong, getAllSongs, deleteSong } from './db'
 
 const AUDIO_EXTENSIONS = new Set(['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.mp4', '.aac', '.opus'])
 
@@ -30,6 +30,16 @@ export async function scanLibrary(rootFolder: string): Promise<ScanResult> {
   }
 
   walkDir(rootFolder, rootFolder, null, null, null, result)
+
+  // Remove songs whose files no longer exist on disk
+  const allSongs = getAllSongs()
+  for (const song of allSongs) {
+    if (song.file_path.startsWith(rootFolder) && !fs.existsSync(song.file_path)) {
+      deleteSong(song.id)
+      result.skipped++
+    }
+  }
+
   return result
 }
 

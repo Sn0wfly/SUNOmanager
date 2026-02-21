@@ -11,7 +11,8 @@ import {
   getGenres,
   getBands,
   getAlbums,
-  getCoverArtDir
+  getCoverArtDir,
+  clearAllSongs
 } from './db'
 import { scanLibrary } from './scanner'
 
@@ -44,6 +45,10 @@ export function registerIpcHandlers(): void {
   })
 
   ipcMain.handle('library:setRoot', (_event, folderPath: string) => {
+    const current = getSetting('root_folder')
+    if (current && current !== folderPath) {
+      clearAllSongs()
+    }
     setSetting('root_folder', folderPath)
     return folderPath
   })
