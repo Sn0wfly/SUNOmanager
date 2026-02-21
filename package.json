@@ -1,0 +1,38 @@
+{
+  "name": "suno-manager",
+  "version": "1.0.0",
+  "description": "Local desktop app to manage SUNO AI-generated songs",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "build:win": "npm run build && electron-builder --win",
+    "preview": "electron-vite preview",
+    "postinstall": "electron-builder install-app-deps || true"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "howler": "^2.2.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@electron-toolkit/preload": "^3.0.1",
+    "@electron-toolkit/utils": "^3.0.0",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/howler": "^2.2.11",
+    "@types/node": "^20.14.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1"
+  }
+}

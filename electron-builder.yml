@@ -1,0 +1,25 @@
+appId: com.sunodev.manager
+productName: SUNOmanager
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**
+  - node_modules/better-sqlite3/build/Release/*.node
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+extraResources:
+  - from: node_modules/better-sqlite3/build/Release/
+    to: better-sqlite3/
+    filter:
+      - '*.node'
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  artifactName: SUNOmanager.exe

@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --suno-bg: #0a0a0f;
+  --suno-surface: #12121a;
+  --suno-card: #1a1a24;
+  --suno-border: #2a2a38;
+  --suno-accent: #7c3aed;
+  --suno-text: #e2e8f0;
+  --suno-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--suno-bg);
+  color: var(--suno-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-app-region: no-drag;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--suno-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--suno-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a4a;
+}
+
+/* Focus rings */
+*:focus-visible {
+  outline: 2px solid var(--suno-accent);
+  outline-offset: 2px;
+}
+
+input, textarea {
+  background-color: var(--suno-surface);
+  border: 1px solid var(--suno-border);
+  color: var(--suno-text);
+  border-radius: 6px;
+  padding: 6px 10px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--suno-accent);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--suno-muted);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+/* Slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  height: 4px;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    var(--suno-accent) var(--track-fill, 0%),
+    var(--suno-border) var(--track-fill, 0%)
+  );
+  height: 4px;
+  border-radius: 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--suno-accent);
+  border-radius: 50%;
+  margin-top: -5px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+input[type="range"]:disabled::-webkit-slider-runnable-track {
+  opacity: 0.4;
+}
+input[type="range"]:disabled::-webkit-slider-thumb {
+  opacity: 0.4;
+  cursor: default;
+}
