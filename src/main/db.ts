@@ -42,10 +42,14 @@ export interface SongUpdate {
 let db: Database.Database
 
 function getDbPath(): string {
-  // Portable mode: store DB next to the executable
   if (app.isPackaged) {
-    const exeDir = path.dirname(app.getPath('exe'))
-    return path.join(exeDir, 'suno-manager.db')
+    // electron-builder portable sets PORTABLE_EXECUTABLE_DIR to the real folder
+    // containing the .exe. app.getPath('exe') points to the temp extraction dir
+    // and gets wiped between runs — never use it for persistent storage.
+    const portableDir = process.env.PORTABLE_EXECUTABLE_DIR
+    if (portableDir) {
+      return path.join(portableDir, 'suno-manager.db')
+    }
   }
   return path.join(app.getPath('userData'), 'suno-manager.db')
 }
@@ -196,7 +200,10 @@ export function getAlbums(genre?: string): { genre: string; album: string; count
 export function getCoverArtDir(): string {
   let dir: string
   if (app.isPackaged) {
-    dir = path.join(path.dirname(app.getPath('exe')), 'cover-art')
+    const portableDir = process.env.PORTABLE_EXECUTABLE_DIR
+    dir = portableDir
+      ? path.join(portableDir, 'cover-art')
+      : path.join(app.getPath('userData'), 'cover-art')
   } else {
     dir = path.join(app.getPath('userData'), 'cover-art')
   }
