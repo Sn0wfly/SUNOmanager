@@ -25,11 +25,10 @@ export default function Sidebar({ onRescan, scanStatus }: SidebarProps) {
     searchSongs
   } = useLibraryStore()
 
-  // Expanded genres: set of genre names
   const [expandedGenres, setExpandedGenres] = useState<Set<string>>(new Set())
-  // Expanded bands: set of "genre::band" keys (same band name can appear in multiple genres)
   const [expandedBands, setExpandedBands] = useState<Set<string>>(new Set())
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
+  const [showFolderInfo, setShowFolderInfo] = useState(false)
 
   function toggleGenre(genre: string) {
     setExpandedGenres(prev => {
@@ -167,9 +166,23 @@ export default function Sidebar({ onRescan, scanStatus }: SidebarProps) {
         {/* Genres */}
         {genres.length > 0 && (
           <div className="mt-3">
-            <p className="px-3 mb-1 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--suno-muted)', letterSpacing: '0.08em' }}>
-              Genres
-            </p>
+            <div className="px-3 mb-1 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--suno-muted)', letterSpacing: '0.08em' }}>
+                Genres
+              </p>
+              <button
+                onClick={() => setShowFolderInfo(true)}
+                title="How to organize your folder structure"
+                style={{ color: 'var(--suno-border)', background: 'none', padding: 0, lineHeight: 1 }}
+                className="transition-colors hover:text-purple-400"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </button>
+            </div>
 
             {genres.map(({ genre, count }) => {
               const isGenreActive = activeGenre === genre
@@ -289,6 +302,87 @@ export default function Sidebar({ onRescan, scanStatus }: SidebarProps) {
           </div>
         )}
       </div>
+
+      {/* Folder structure info modal */}
+      {showFolderInfo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowFolderInfo(false)}
+        >
+          <div
+            className="rounded-xl p-5 shadow-2xl"
+            style={{
+              backgroundColor: 'var(--suno-card)',
+              border: '1px solid var(--suno-border)',
+              width: 340,
+              maxWidth: '90vw'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--suno-accent)" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span className="text-sm font-semibold" style={{ color: 'var(--suno-text)' }}>
+                  Folder Structure
+                </span>
+              </div>
+              <button
+                onClick={() => setShowFolderInfo(false)}
+                style={{ color: 'var(--suno-muted)', background: 'none', padding: 0, lineHeight: 1 }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Description */}
+            <p className="text-xs mb-3" style={{ color: 'var(--suno-muted)', lineHeight: 1.6 }}>
+              Organize your music folder with 4 levels so SUNO Manager can detect genre, band and album automatically:
+            </p>
+
+            {/* Folder tree */}
+            <div
+              className="rounded-lg p-3 mb-3 text-xs font-mono"
+              style={{ backgroundColor: 'var(--suno-surface)', border: '1px solid var(--suno-border)', color: '#a78bfa', lineHeight: 2 }}
+            >
+              <div style={{ color: 'var(--suno-text)' }}>📁 SunoFolder/</div>
+              <div style={{ color: '#34d399' }}>  📁 Genre/</div>
+              <div style={{ color: '#60a5fa' }}>    📁 Band/</div>
+              <div style={{ color: 'var(--suno-muted)' }}>      📁 Album/</div>
+              <div style={{ color: 'var(--suno-muted)' }}>        🎵 song.mp3</div>
+            </div>
+
+            {/* Example */}
+            <p className="text-xs mb-2 font-medium" style={{ color: 'var(--suno-muted)' }}>Example:</p>
+            <div
+              className="rounded-lg p-3 text-xs font-mono"
+              style={{ backgroundColor: 'var(--suno-surface)', border: '1px solid var(--suno-border)', lineHeight: 2 }}
+            >
+              <div style={{ color: 'var(--suno-text)' }}>📁 Suno/</div>
+              <div style={{ color: '#34d399' }}>  📁 Lofi/</div>
+              <div style={{ color: '#60a5fa' }}>    📁 Linkin Park/</div>
+              <div style={{ color: 'var(--suno-muted)' }}>      📁 Meteora Covers/</div>
+              <div style={{ color: 'var(--suno-muted)' }}>        🎵 Numb.mp3</div>
+              <div style={{ color: '#34d399' }}>  📁 Mathcore/</div>
+              <div style={{ color: '#60a5fa' }}>    📁 Linkin Park/</div>
+              <div style={{ color: 'var(--suno-muted)' }}>      📁 Hybrid Theory/</div>
+              <div style={{ color: 'var(--suno-muted)' }}>        🎵 Crawling.mp3</div>
+            </div>
+
+            <p className="text-xs mt-3" style={{ color: 'var(--suno-muted)', lineHeight: 1.6 }}>
+              The same band can appear under multiple genres. After reorganizing, hit <span style={{ color: '#a78bfa' }}>Rescan Folder</span>.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Rescan button */}
       <div className="p-3" style={{ borderTop: '1px solid var(--suno-border)' }}>
