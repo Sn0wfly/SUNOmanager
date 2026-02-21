@@ -14,8 +14,15 @@ export interface GenreInfo {
   count: number
 }
 
+export interface BandInfo {
+  genre: string
+  band: string
+  count: number
+}
+
 export interface AlbumInfo {
   genre: string
+  band: string | null
   album: string
   count: number
 }
@@ -23,8 +30,8 @@ export interface AlbumInfo {
 const api = {
   // Songs
   songs: {
-    getAll: (genre?: string, album?: string): Promise<Song[]> =>
-      ipcRenderer.invoke('songs:getAll', genre, album),
+    getAll: (genre?: string, band?: string, album?: string): Promise<Song[]> =>
+      ipcRenderer.invoke('songs:getAll', genre, band, album),
     get: (id: number): Promise<Song | undefined> =>
       ipcRenderer.invoke('songs:get', id),
     update: (id: number, updates: Partial<SongUpdate>): Promise<Song> =>
@@ -45,8 +52,10 @@ const api = {
       ipcRenderer.invoke('library:pickFolder'),
     getGenres: (): Promise<GenreInfo[]> =>
       ipcRenderer.invoke('library:getGenres'),
-    getAlbums: (genre?: string): Promise<AlbumInfo[]> =>
-      ipcRenderer.invoke('library:getAlbums', genre)
+    getBands: (genre?: string): Promise<BandInfo[]> =>
+      ipcRenderer.invoke('library:getBands', genre),
+    getAlbums: (genre?: string, band?: string): Promise<AlbumInfo[]> =>
+      ipcRenderer.invoke('library:getAlbums', genre, band)
   },
 
   // Settings

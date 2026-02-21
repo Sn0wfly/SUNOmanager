@@ -8,6 +8,7 @@ export interface Song {
   title: string
   file_path: string
   genre: string | null
+  band: string | null
   album: string | null
   lyrics: string | null
   style_prompt: string | null
@@ -25,6 +26,9 @@ export interface Song {
 
 export interface SongUpdate {
   title?: string
+  genre?: string
+  band?: string
+  album?: string
   lyrics?: string
   style_prompt?: string
   weirdness_pct?: number
@@ -35,8 +39,6 @@ export interface SongUpdate {
   tags?: string
   date_created?: string
   cover_art_path?: string
-  genre?: string
-  album?: string
 }
 
 let db: Database.Database
@@ -60,6 +62,7 @@ export function initDb(): void {
   db.pragma('journal_mode = WAL')
   db.pragma('foreign_keys = ON')
   createTables()
+  runMigrations()
 }
 
 function createTables(): void {
@@ -69,6 +72,7 @@ function createTables(): void {
       title TEXT NOT NULL,
       file_path TEXT NOT NULL UNIQUE,
       genre TEXT,
+      band TEXT,
       album TEXT,
       lyrics TEXT,
       style_prompt TEXT,
@@ -91,6 +95,14 @@ function createTables(): void {
   `)
 }
 
+function runMigrations(): void {
+  // Add 'band' column if upgrading from an older database that didn't have it
+  const cols = db.prepare('PRAGMA table_info(songs)').all() as { name: string }[]
+  if (!cols.some(c => c.name === 'band')) {
+    db.exec('ALTER TABLE songs ADD COLUMN band TEXT')
+  }
+}
+
 // --- Settings ---
 
 export function getSetting(key: string): string | null {
@@ -104,7 +116,7 @@ export function setSetting(key: string, value: string): void {
 
 // --- Songs ---
 
-export function getAllSongs(genre?: string, album?: string): Song[] {
+export function getAllSongs(genre?: string, band?: string, album?: string): Song[] {
   let query = 'SELECT * FROM songs'
   const params: string[] = []
   const conditions: string[] = []
@@ -113,6 +125,10 @@ export function getAllSongs(genre?: string, album?: string): Song[] {
     conditions.push('genre = ?')
     params.push(genre)
   }
+  if (band) {
+    conditions.push('band = ?')
+    params.push(band)
+  }
   if (album) {
     conditions.push('album = ?')
     params.push(album)
@@ -120,7 +136,7 @@ export function getAllSongs(genre?: string, album?: string): Song[] {
   if (conditions.length > 0) {
     query += ' WHERE ' + conditions.join(' AND ')
   }
-  query += ' ORDER BY genre, album, title'
+  query += ' ORDER BY genre, band, album, title'
   return db.prepare(query).all(...params) as Song[]
 }
 
@@ -138,20 +154,22 @@ export function searchSongs(query: string): Song[] {
        OR notes LIKE ?
        OR tags LIKE ?
        OR genre LIKE ?
+       OR band LIKE ?
        OR album LIKE ?
     ORDER BY title
-  `).all(q, q, q, q, q, q, q) as Song[]
+  `).all(q, q, q, q, q, q, q, q) as Song[]
 }
 
 export function upsertSong(song: Omit<Song, 'id' | 'created_at' | 'updated_at'>): number {
   const stmt = db.prepare(`
-    INSERT INTO songs (title, file_path, genre, album, lyrics, style_prompt,
+    INSERT INTO songs (title, file_path, genre, band, album, lyrics, style_prompt,
       weirdness_pct, style_pct, audio_influence_pct, notes, rating, tags, date_created, cover_art_path)
-    VALUES (@title, @file_path, @genre, @album, @lyrics, @style_prompt,
+    VALUES (@title, @file_path, @genre, @band, @album, @lyrics, @style_prompt,
       @weirdness_pct, @style_pct, @audio_influence_pct, @notes, @rating, @tags, @date_created, @cover_art_path)
     ON CONFLICT(file_path) DO UPDATE SET
       title = excluded.title,
       genre = excluded.genre,
+      band = excluded.band,
       album = excluded.album,
       updated_at = CURRENT_TIMESTAMP
   `)
@@ -182,19 +200,39 @@ export function getGenres(): { genre: string; count: number }[] {
   `).all() as { genre: string; count: number }[]
 }
 
-export function getAlbums(genre?: string): { genre: string; album: string; count: number }[] {
+export function getBands(genre?: string): { genre: string; band: string; count: number }[] {
   if (genre) {
     return db.prepare(`
-      SELECT genre, album, COUNT(*) as count FROM songs
-      WHERE genre = ? AND album IS NOT NULL
-      GROUP BY album ORDER BY album
-    `).all(genre) as { genre: string; album: string; count: number }[]
+      SELECT genre, band, COUNT(*) as count FROM songs
+      WHERE genre = ? AND band IS NOT NULL
+      GROUP BY band ORDER BY band
+    `).all(genre) as { genre: string; band: string; count: number }[]
   }
   return db.prepare(`
-    SELECT genre, album, COUNT(*) as count FROM songs
-    WHERE album IS NOT NULL
-    GROUP BY genre, album ORDER BY genre, album
-  `).all() as { genre: string; album: string; count: number }[]
+    SELECT genre, band, COUNT(*) as count FROM songs
+    WHERE band IS NOT NULL
+    GROUP BY genre, band ORDER BY genre, band
+  `).all() as { genre: string; band: string; count: number }[]
+}
+
+export function getAlbums(genre?: string, band?: string): { genre: string; band: string | null; album: string; count: number }[] {
+  const conditions: string[] = ['album IS NOT NULL']
+  const params: string[] = []
+
+  if (genre) {
+    conditions.push('genre = ?')
+    params.push(genre)
+  }
+  if (band) {
+    conditions.push('band = ?')
+    params.push(band)
+  }
+
+  return db.prepare(`
+    SELECT genre, band, album, COUNT(*) as count FROM songs
+    WHERE ${conditions.join(' AND ')}
+    GROUP BY genre, band, album ORDER BY album
+  `).all(...params) as { genre: string; band: string | null; album: string; count: number }[]
 }
 
 export function getCoverArtDir(): string {

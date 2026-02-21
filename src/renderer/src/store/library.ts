@@ -5,6 +5,7 @@ export interface Song {
   title: string
   file_path: string
   genre: string | null
+  band: string | null
   album: string | null
   lyrics: string | null
   style_prompt: string | null
@@ -25,8 +26,15 @@ export interface GenreInfo {
   count: number
 }
 
+export interface BandInfo {
+  genre: string
+  band: string
+  count: number
+}
+
 export interface AlbumInfo {
   genre: string
+  band: string | null
   album: string
   count: number
 }
@@ -46,9 +54,11 @@ interface LibraryStore {
   songs: Song[]
   selectedSong: Song | null
   genres: GenreInfo[]
+  bands: BandInfo[]
   albums: AlbumInfo[]
   searchQuery: string
   activeGenre: string | null
+  activeBand: string | null
   activeAlbum: string | null
   isLoading: boolean
 
@@ -60,9 +70,11 @@ interface LibraryStore {
   setSelectedSong: (song: Song | null) => void
   updateSongInList: (song: Song) => void
   setGenres: (genres: GenreInfo[]) => void
+  setBands: (bands: BandInfo[]) => void
   setAlbums: (albums: AlbumInfo[]) => void
   setSearchQuery: (query: string) => void
   setActiveGenre: (genre: string | null) => void
+  setActiveBand: (band: string | null) => void
   setActiveAlbum: (album: string | null) => void
   setIsLoading: (loading: boolean) => void
 
@@ -77,9 +89,10 @@ interface LibraryStore {
   playPrev: () => Song | null
 
   // Library actions
-  loadSongs: (genre?: string, album?: string) => Promise<void>
+  loadSongs: (genre?: string, band?: string, album?: string) => Promise<void>
   loadGenres: () => Promise<void>
-  loadAlbums: (genre?: string) => Promise<void>
+  loadBands: (genre?: string) => Promise<void>
+  loadAlbums: (genre?: string, band?: string) => Promise<void>
   searchSongs: (query: string) => Promise<void>
   refreshSong: (id: number) => Promise<void>
 }
@@ -88,9 +101,11 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
   songs: [],
   selectedSong: null,
   genres: [],
+  bands: [],
   albums: [],
   searchQuery: '',
   activeGenre: null,
+  activeBand: null,
   activeAlbum: null,
   isLoading: false,
 
@@ -111,9 +126,11 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     selectedSong: state.selectedSong?.id === song.id ? song : state.selectedSong
   })),
   setGenres: (genres) => set({ genres }),
+  setBands: (bands) => set({ bands }),
   setAlbums: (albums) => set({ albums }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setActiveGenre: (genre) => set({ activeGenre: genre }),
+  setActiveBand: (band) => set({ activeBand: band }),
   setActiveAlbum: (album) => set({ activeAlbum: album }),
   setIsLoading: (loading) => set({ isLoading: loading }),
 
@@ -158,9 +175,9 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     return prevSong
   },
 
-  loadSongs: async (genre?: string, album?: string) => {
+  loadSongs: async (genre?: string, band?: string, album?: string) => {
     set({ isLoading: true })
-    const songs = await window.api.songs.getAll(genre, album) as Song[]
+    const songs = await window.api.songs.getAll(genre, band, album) as Song[]
     set({ songs, isLoading: false })
   },
 
@@ -169,15 +186,20 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     set({ genres })
   },
 
-  loadAlbums: async (genre?: string) => {
-    const albums = await window.api.library.getAlbums(genre)
+  loadBands: async (genre?: string) => {
+    const bands = await window.api.library.getBands(genre)
+    set({ bands })
+  },
+
+  loadAlbums: async (genre?: string, band?: string) => {
+    const albums = await window.api.library.getAlbums(genre, band)
     set({ albums })
   },
 
   searchSongs: async (query: string) => {
     if (!query.trim()) {
-      const { activeGenre, activeAlbum } = get()
-      await get().loadSongs(activeGenre ?? undefined, activeAlbum ?? undefined)
+      const { activeGenre, activeBand, activeAlbum } = get()
+      await get().loadSongs(activeGenre ?? undefined, activeBand ?? undefined, activeAlbum ?? undefined)
       return
     }
     set({ isLoading: true })

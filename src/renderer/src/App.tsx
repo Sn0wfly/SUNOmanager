@@ -12,7 +12,7 @@ export default function App() {
   const [showFirstRun, setShowFirstRun] = useState(false)
   const [scanStatus, setScanStatus] = useState<string | null>(null)
 
-  const { loadSongs, loadGenres, loadAlbums, activeGenre, activeAlbum } = useLibraryStore()
+  const { loadSongs, loadGenres, loadBands, loadAlbums, activeGenre, activeBand, activeAlbum } = useLibraryStore()
 
   const initialize = useCallback(async () => {
     const root = await window.api.library.getRoot()
@@ -21,11 +21,12 @@ export default function App() {
       setShowFirstRun(true)
     } else {
       await loadGenres()
+      await loadBands()
       await loadAlbums()
       await loadSongs()
     }
     setIsInitialized(true)
-  }, [loadGenres, loadAlbums, loadSongs])
+  }, [loadGenres, loadBands, loadAlbums, loadSongs])
 
   useEffect(() => {
     initialize()
@@ -50,7 +51,7 @@ export default function App() {
     const result = await window.api.library.scan(rootFolder)
     await loadGenres()
     await loadAlbums()
-    await loadSongs(activeGenre ?? undefined, activeAlbum ?? undefined)
+    await loadSongs(activeGenre ?? undefined, activeBand ?? undefined, activeAlbum ?? undefined)
     setScanStatus(`Scanned: ${result.added} songs`)
     setTimeout(() => setScanStatus(null), 3000)
   }

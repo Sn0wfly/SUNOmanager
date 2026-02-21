@@ -9,6 +9,7 @@ import {
   getSetting,
   setSetting,
   getGenres,
+  getBands,
   getAlbums,
   getCoverArtDir
 } from './db'
@@ -17,8 +18,8 @@ import { scanLibrary } from './scanner'
 export function registerIpcHandlers(): void {
   // --- Songs ---
 
-  ipcMain.handle('songs:getAll', (_event, genre?: string, album?: string) => {
-    return getAllSongs(genre, album)
+  ipcMain.handle('songs:getAll', (_event, genre?: string, band?: string, album?: string) => {
+    return getAllSongs(genre, band, album)
   })
 
   ipcMain.handle('songs:get', (_event, id: number) => {
@@ -65,8 +66,12 @@ export function registerIpcHandlers(): void {
     return getGenres()
   })
 
-  ipcMain.handle('library:getAlbums', (_event, genre?: string) => {
-    return getAlbums(genre)
+  ipcMain.handle('library:getBands', (_event, genre?: string) => {
+    return getBands(genre)
+  })
+
+  ipcMain.handle('library:getAlbums', (_event, genre?: string, band?: string) => {
+    return getAlbums(genre, band)
   })
 
   // --- Settings ---

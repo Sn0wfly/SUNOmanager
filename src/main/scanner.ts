@@ -13,11 +13,13 @@ interface ScanResult {
 /**
  * Walks the folder tree:
  *  rootFolder/
- *    GenreName/             ← Level 2 = genre
- *      AlbumName/           ← Level 3 = album
- *        song.mp3
- *      song.mp3             ← also valid (no album)
- *    song.mp3               ← also valid (no genre/album)
+ *    Genre/               ← depth 0 = genre
+ *      Band/              ← depth 1 = band
+ *        Album/           ← depth 2 = album
+ *          song.mp3
+ *        song.mp3         ← valid (no album)
+ *      song.mp3           ← valid (no band/album)
+ *    song.mp3             ← valid (no genre/band/album)
  */
 export async function scanLibrary(rootFolder: string): Promise<ScanResult> {
   const result: ScanResult = { added: 0, skipped: 0, errors: [] }
@@ -27,7 +29,7 @@ export async function scanLibrary(rootFolder: string): Promise<ScanResult> {
     return result
   }
 
-  walkDir(rootFolder, rootFolder, null, null, result)
+  walkDir(rootFolder, rootFolder, null, null, null, result)
   return result
 }
 
@@ -35,13 +37,14 @@ function walkDir(
   rootFolder: string,
   currentPath: string,
   genre: string | null,
+  band: string | null,
   album: string | null,
   result: ScanResult
 ): void {
   let entries: fs.Dirent[]
   try {
     entries = fs.readdirSync(currentPath, { withFileTypes: true })
-  } catch (e: unknown) {
+  } catch {
     result.errors.push(`Cannot read directory: ${currentPath}`)
     return
   }
@@ -52,21 +55,26 @@ function walkDir(
     if (entry.isDirectory()) {
       const depth = getDepth(rootFolder, fullPath)
       let newGenre = genre
+      let newBand = band
       let newAlbum = album
 
-      if (depth === 1) {
+      if (depth === 0) {
         newGenre = entry.name
+        newBand = null
         newAlbum = null
-      } else if (depth === 2 && genre !== null) {
+      } else if (depth === 1 && genre !== null) {
+        newBand = entry.name
+        newAlbum = null
+      } else if (depth === 2 && band !== null) {
         newAlbum = entry.name
       }
 
-      walkDir(rootFolder, fullPath, newGenre, newAlbum, result)
+      walkDir(rootFolder, fullPath, newGenre, newBand, newAlbum, result)
     } else if (entry.isFile()) {
       const ext = path.extname(entry.name).toLowerCase()
       if (AUDIO_EXTENSIONS.has(ext)) {
         try {
-          importAudioFile(fullPath, entry.name, genre, album)
+          importAudioFile(fullPath, entry.name, genre, band, album)
           result.added++
         } catch (e: unknown) {
           result.errors.push(`Failed to import ${fullPath}: ${(e as Error).message}`)
@@ -86,6 +94,7 @@ function importAudioFile(
   filePath: string,
   fileName: string,
   genre: string | null,
+  band: string | null,
   album: string | null
 ): void {
   const ext = path.extname(fileName)
@@ -102,7 +111,6 @@ function importAudioFile(
     }
   }
 
-  // Try to parse date from file stats
   const stats = fs.statSync(filePath)
   const dateCreated = stats.birthtime.toISOString().split('T')[0]
 
@@ -110,6 +118,7 @@ function importAudioFile(
     title: cleanTitle(baseName),
     file_path: filePath,
     genre,
+    band,
     album,
     lyrics: null,
     style_prompt: null,
@@ -125,7 +134,6 @@ function importAudioFile(
 }
 
 function cleanTitle(name: string): string {
-  // Remove leading numbers/separators like "01 - " or "01. "
   return name
     .replace(/^\d+[\s._-]+/, '')
     .replace(/_/g, ' ')

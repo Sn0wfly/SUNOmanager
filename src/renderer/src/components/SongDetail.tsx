@@ -18,6 +18,7 @@ interface EditState {
   date_created: string
   cover_art_path: string | null
   genre: string
+  band: string
   album: string
 }
 
@@ -44,6 +45,7 @@ function toEditState(song: Song): EditState {
     date_created: song.date_created ?? '',
     cover_art_path: song.cover_art_path ?? null,
     genre: song.genre ?? '',
+    band: song.band ?? '',
     album: song.album ?? ''
   }
 }
@@ -163,7 +165,7 @@ export default function SongDetail() {
               <label className="block text-xs font-medium mb-1" style={{ color: 'var(--suno-muted)' }}>Rating</label>
               <StarRating value={edit.rating} onChange={v => { updateField('rating', v); save({ rating: v }, selectedSong.id) }} />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: 'var(--suno-muted)' }}>Genre</label>
                 <input
@@ -172,6 +174,16 @@ export default function SongDetail() {
                   onChange={e => updateField('genre', e.target.value)}
                   onBlur={() => handleBlurSave('genre')}
                   placeholder="Genre"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--suno-muted)' }}>Band</label>
+                <input
+                  type="text"
+                  value={edit.band}
+                  onChange={e => updateField('band', e.target.value)}
+                  onBlur={() => handleBlurSave('band')}
+                  placeholder="Band"
                 />
               </div>
               <div>
